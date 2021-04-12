@@ -199,3 +199,7 @@ anova(MODL01, fullup)
 ```
 
 MODL00, or H-W, has the greatest Residual Sum of Squares, suggesting it is the most error- prone. The first comparison, between H-W and fullup, has a lower p- value than the second comparison, between L2-W and fullup. The null hypothesis is that, given there is no significant difference in effectiveness between the compared models, the data will be as is. Since the p-value is much higher in the second comparison, L2-W is much closer (in effectiveness) to fullup than H-W is, which aligns with the findings from earlier. However, since H-W also has a p-value over 0.05, the results are non-significant and the (best) model with the fewest variables should be chosen by default, making L2-W the most effective model.  
+
+## Discussion and Conclusion
+
+Based on the automated selection of variables there is no real difference in using a model with two variables versus using one with all the variables. this was identified through a graphical depiction of the adjusted rsquared as well as the pvalues.  In conclusion comparing the pvalues of the two variable models the pvalues were so small that I rejected the null hypothesis that these models are beneficial in predicting the weight of a fish.  The pvalues associated with the anovas were large and therefore result in a failure to reject the null hypothesis, there is no difference between using the model with two variables versus the fullup models.
