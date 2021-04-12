@@ -72,21 +72,79 @@ summary.lm(fullup)
 Height and Width have the lowest p-values, making them the most important variables. This model (including every variable) also has a slightly lower Adjusted R-squared value, making it less useful to us than the 2-variable model used earlier.  
 
 
-## Descriptive Results
+# Bream model.  
 
-### Graphical Descriptive Results
+## Results
 
-<!--Graphical results here.  Make sure to show your code.  Provide appropriate labels for axes, giving units if possible, and provide a good title for the graph, too.  Use the graphical results to describe the patterns if any that exist in the data as focused toward the research question!-->
+```{r}
+library(leaps)
+regsubsets.out <-
+    regsubsets(Weight ~ .,
+               data = Bream,
+               nbest = 1,       # 1 best model for each number of predictors
+               nvmax = NULL,    # NULL for no limit on number of variables
+               force.in = NULL, force.out = NULL,
+               method = "exhaustive")
+summary.out <- summary(regsubsets.out)
+as.data.frame(summary.out$outmat)
+library(car)
+subsets(regsubsets.out,statistic="adjr2",legend="bottom",main="Adjusted R^2")
+```
 
-### Numerical Descriptive Results
+The best model for predicting a Bream's weight has 3 variables: length1, height, and width. While the L2-W model is probably the best 2-variable model, this must be tested manually to reduce chances of error.  
 
-<!--Numerical results go here. Use the numerical results to describe the patterns if any that exist in the data as focused toward the research question!-->
+### Manual results
 
-## Inferential Results
+```{r}
+fullup <- lm(Weight~ .,data=Bream)
+summary.lm(fullup)
+```
 
-<!--State hypothesis clearly.  Make sure your discussion of the inferential test covers all the aspects that the test output produces, such as test statistic, p-value etc.  Make a decision about the null hypothesis, explain the assumptions on which the selected test/procedure was based, and why the chosen procedure satisfys the assumptions and is appropriate to answer the research question!-->
+Height and Width seem to be the most important variables, which brings into question why L2-H was considered the best 2-variable model earlier. Length1 is the least important due to having the greatest p-value, so it'll be removed first.  
+  
+```{r}
+MODL4 <- lm(Weight~ .-Length1,data=Bream)
+summary.lm(MODL4)
+```
 
+The residual standard error decreased, and the Adjusted R-squared value increased from 0.9335 to 0.9355; this is indicative of a more accurate model. Length2 used to have the 2nd- highest p-value (higher than Length3's), but now Length3 has a higher p-value and thus will be removed next.  
 
-# Discussion and Conclusion
+```{r}
+MODL3 <- lm(Weight~ .-Length1-Length3,data=Bream)
+summary.lm(MODL3)
+```
 
-<!--Discussion and conclusion here.  If you found a relationship be sure to consider whether the relationship occurs because one of the variavbles causes the other, or whether they perhasps are related for some other reason.  Watch the chapter 6 videos from the GeorgeTown videos collection.!-->
+Standard error decreased while Adjusted R-squared increased, which is good. The listed p-values help to explain why L2-H was considered the best model: Width now has the highest p-value of 0.1873, so it will be removed next.  
+
+```{r}
+MODL2 <- lm(Weight~ .-Length1-Length3-Width,data=Bream)
+summary.lm(MODL2)
+```
+
+This model is actually worse than the previous one, with an increased SE and a decreased Adj. R-squared. MODL2 (AKA. L2-H) will now be compared with a Width and Height model.  
+
+```{r}
+MODL0 <- lm(Weight~ Width + Height,data=Bream)
+summary.lm(MODL0)
+```
+
+This is worse than the MODL2, due to a greater standard error and smaller Adj R-squared.  
+
+## Inferential Results.
+
+```{r}
+anova(MODL2,fullup)
+anova(MODL0, fullup)
+anova(MODL0,MODL2, fullup)
+
+```
+
+The total sum of squares ("Sum of Sq" above) subtracts the variation accounted for by the model, but Residual Sum of Squares ("RSS") only takes into account the error variations. MODL0 has the greatest RSS and is thus the most error- prone; fullup (using every available variable) is the least error- prone. Normally, a higher sum of squares means there's more variability from the mean value. However, when comparing 2 models in anova, it has an additional meaning: MODL0 and MODL2 are the closest to each other, while MODL0 and fullup are the least similar. This is because sum of squares can be calculated as the difference (from subtraction) between the RSS values of each model. Using the first comparison as an example: (RSS of MODL2) - (RSS of fullup) = Sum of Squares, when taking into account rounding errors. However, fairly high p-values (greater than 0.4) suggest there is no significant difference between fullup and MODL2, and brings into question the difference in effectiveness between fullup and MODL0. Assuming the difference (in effectiveness) between a 2- variable and all- variable model is insignificant, the model with fewer variables should be chosen.  
+
+```{r}
+SumofSquares = 90244 - 84438
+print(SumofSquares)
+```
+
+Thus, while fullup seems to be the best model out of the three (at least when using RSS to compare), MODL2 is confirmed to be the best 2-variable model.  
+
