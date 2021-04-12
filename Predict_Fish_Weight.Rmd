@@ -12,23 +12,65 @@ output:
 ```{r include=FALSE,echo=FALSE}
 require(tigerstats)
 require(tidyverse)
+require(car)
+Allfish <- read.csv(file = "Fish.csv")
+Allfish$Species <- as.factor(Allfish$Species)
+levels(Allfish$Species)
 ```
 
-# Introduction
+```{r}
+Perch <- subset(Allfish, Species == "Perch")
+Perch <- select(Perch, -Species)
+Bream <- subset(Allfish, Species == "Bream")
+Bream <- select(Bream, -Species)
+Smelt <- subset(Allfish, Species == "Smelt")
+Smelt <- select (Smelt, -Species )
+```
 
-<!--In this section you explain what you are trying to show.  Where did the data come from?  What is the research or other question you are trying to answer?!-->
 
-## Build the best regression model you can that predicts the weight of perch
-## Using only two predictor variables  
+#Perch Model
 
+## Results
 
-# Methods
+```{r}
+library(leaps)
+regsubsets.out <-
+    regsubsets(Weight ~ .,
+               data = Perch,
+               nbest = 1,       # 1 best model for each number of predictors
+               nvmax = NULL,    # NULL for no limit on number of variables
+               force.in = NULL, force.out = NULL,
+               method = "exhaustive")
+summary.out <- summary(regsubsets.out)
+as.data.frame(summary.out$outmat)
+library(car)
+subsets(regsubsets.out,statistic="adjr2",legend="bottom",main="Adjusted R^2")
+```
 
-<!--Decide on your methods:  use "variable analysis" or other appropriate descriptors.  Make sure to choose at least one graphical method and at least one numerical method.!-->
+According to the automation, the best 2 variables for predicting Weight are Height and Width, because (according to the graphic) the Height- Width model has a greater Adjusted R-square value than all the other ones, at ~.94, or 94%.  
 
-#Results
+```{r}
+which.max(summary.out$adjr2)
+```
 
-<!--Divide this section into two sub-sections:  One for your descriptive  results and one for your inferential results.!-->
+The model with those 2 variables has the greatest Adjusted R-squared, meaning it explains the greatest percentage of the data in Perch.  
+  
+```{r}
+best.model <- lm(Weight~ Height + Width,data=Perch)
+summary(best.model)
+```
+
+An Adjusted R-squared value of 0.94 means 94% of the length values can be explained by this model, which is incredibly useful (especially considering such a low p-value).  
+
+## Inferential Results.
+
+```{r}
+fullup <- lm(Weight~ .,data=Perch)
+summary.lm(fullup)
+```
+
+Height and Width have the lowest p-values, making them the most important variables. This model (including every variable) also has a slightly lower Adjusted R-squared value, making it less useful to us than the 2-variable model used earlier.  
+
 
 ## Descriptive Results
 
