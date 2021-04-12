@@ -148,3 +148,54 @@ print(SumofSquares)
 
 Thus, while fullup seems to be the best model out of the three (at least when using RSS to compare), MODL2 is confirmed to be the best 2-variable model.  
 
+# Smelt model. 
+
+## Results
+```{r}
+library(leaps)
+regsubsets.out <-
+    regsubsets(Weight ~ .,
+               data = Smelt,
+               nbest = 1,       # 1 best model for each number of predictors
+               nvmax = NULL,    # NULL for no limit on number of variables
+               force.in = NULL, force.out = NULL,
+               method = "exhaustive")
+summary.out <- summary(regsubsets.out)
+as.data.frame(summary.out$outmat)
+library(car)
+subsets(regsubsets.out,statistic="adjr2",legend="bottomright",main="Adjusted R^2")
+```
+
+According to the graphic, L2-W is the best 2- variable model. To double- check this, L2-W will be compared with L2-H, H-W, and fullup.  
+
+### Manual results.  
+
+```{r}
+fullup <- lm(Weight~ .,data=Smelt)
+summary.lm(fullup)
+```
+
+This model uses every numerical variable in the dataset (other than weight) to predict the weight of a smelt. Length3 is the least important variable (with the highest p-value of 0.6643), which is why it isn't in the automated L1-L2-H-W model.  
+
+```{r}
+MODL01 <- lm(Weight~ Length2 + Width,data=Smelt)
+summary.lm(MODL01)
+```
+
+This model's RSE value, as predicted by the graphic, is slightly higher than in the fullup model but much lower than in the H-W model. The Adjusted R-squared value, 0.9645, is only very slightly lower than in the model that used every variable.  
+
+```{r}
+MODL00 <- lm(Weight~ Height + Width,data=Smelt)
+summary.lm(MODL00)
+```
+
+This model, H-W, has the highest RSE (0.9555) and a slightly lower Adjusted R-squared than both the fullup and L2-W model. Therefore, while fullup is the best model of the three analyzed, L2-W is the best 2- variable model.  
+
+## Inferential Results.
+
+```{r}
+anova(MODL00, fullup)
+anova(MODL01, fullup)
+```
+
+MODL00, or H-W, has the greatest Residual Sum of Squares, suggesting it is the most error- prone. The first comparison, between H-W and fullup, has a lower p- value than the second comparison, between L2-W and fullup. The null hypothesis is that, given there is no significant difference in effectiveness between the compared models, the data will be as is. Since the p-value is much higher in the second comparison, L2-W is much closer (in effectiveness) to fullup than H-W is, which aligns with the findings from earlier. However, since H-W also has a p-value over 0.05, the results are non-significant and the (best) model with the fewest variables should be chosen by default, making L2-W the most effective model.  
